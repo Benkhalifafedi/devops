@@ -6,10 +6,12 @@ pipeline {
         maven 'Maven3'
     }
 
-    environment {
-        // Nom de l'image Docker sur Docker Hub
-        DOCKER_IMAGE = "benkhalifafedi/student-management"
-    }
+   environment {
+    // Nom de l'image Docker sur Docker Hub
+    // ⚠️ Mets bien TON username Docker Hub ici
+    DOCKER_IMAGE = "fedibenkhalifa/student-management"
+}
+
 
     stages {
         stage('Checkout') {
