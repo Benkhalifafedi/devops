@@ -2,12 +2,12 @@ pipeline {
     agent any
 
     tools {
-        maven 'M3'   // le nom du Maven configuré dans Jenkins (si différent, adapte)
+        // Nom EXACT du Maven configuré dans Manage Jenkins -> Global Tool Configuration
+        maven 'Maven3'
     }
 
     environment {
         // Nom de l'image Docker sur Docker Hub
-        // ⚠️ Mets ici TON username Docker Hub
         DOCKER_IMAGE = "benkhalifafedi/student-management"
     }
 
@@ -23,7 +23,6 @@ pipeline {
             steps {
                 echo 'Build Maven (clean + package)...'
                 bat "mvn clean package"
-                // Archive le JAR
                 archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
             }
         }
