@@ -11,7 +11,8 @@ WORKDIR /app
 COPY ${JAR_FILE} app.jar
 
 # Exposer le port Spring Boot
-EXPOSE 8080
+EXPOSE 8089
 
 # Commande de démarrage
 ENTRYPOINT ["java", "-jar", "app.jar"]
+
