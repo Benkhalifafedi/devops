@@ -20,6 +20,15 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/Benkhalifafedi/devops.git'
             }
         }
+           // 🔍 NOUVEAU STAGE SONAR
+        stage('SonarQube Analysis') {
+            steps {
+                // "sonarqube" = le Name défini dans Manage Jenkins > SonarQube servers
+                withSonarQubeEnv('sonarqube') {
+                    bat 'mvn -B verify sonar:sonar'
+                }
+            }
+        }
 
         stage('Build - mvn clean package') {
             steps {
