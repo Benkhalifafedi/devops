@@ -18,6 +18,17 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/Benkhalifafedi/devops.git'
             }
         }
+        stage('Deploy to Kubernetes') {
+    steps {
+        echo 'Déploiement sur le cluster K8s...'
+        bat """
+            kubectl apply -f K8s/mysql-k8s.yaml
+            kubectl apply -f K8s/spring-config.yaml
+            kubectl apply -f K8s/spring-deployment.yaml
+        """
+    }
+}
+
 
         stage('Build - mvn clean package') {
             steps {
