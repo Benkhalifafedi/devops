@@ -12,24 +12,13 @@ pipeline {
     }
 
     stages {
+
         stage('Checkout') {
             steps {
                 echo 'Récupération du projet depuis GitHub...'
                 git branch: 'main', url: 'https://github.com/Benkhalifafedi/devops.git'
             }
         }
- stage('Deploy to Kubernetes') {
-    steps {
-        echo 'Déploiement sur le cluster K8s...'
-        bat """
-            kubectl apply -n devops -f student-management/K8s/mysql-k8s.yaml
-            kubectl apply -n devops -f student-management/K8s/spring-config.yaml
-            kubectl apply -n devops -f student-management/K8s/spring-deployment.yaml
-        """
-    }
-}
-
-
 
         stage('Build - mvn clean package') {
             steps {
@@ -39,7 +28,6 @@ pipeline {
             }
         }
 
-        // 🔍 Analyse SonarQube
         stage('SonarQube Analysis') {
             steps {
                 // "sonarqube" = le Name défini dans Manage Jenkins > SonarQube servers
@@ -67,33 +55,43 @@ pipeline {
                                                   usernameVariable: 'DOCKER_USER',
                                                   passwordVariable: 'DOCKER_PASS')]) {
                     script {
-                        // Login Docker Hub
                         bat 'docker login -u %DOCKER_USER% -p %DOCKER_PASS%'
 
-                        // ✅ Push du tag numéroté (obligatoire)
+                        // Push du tag numéroté
                         bat 'docker push %DOCKER_IMAGE%:%BUILD_NUMBER%'
 
-                        // ⚠️ Push du tag latest : s’il échoue, on affiche un warning mais on ne casse pas le build
+                        // Push du tag latest (optionnel)
                         def status = bat(
                             returnStatus: true,
                             script: 'docker push %DOCKER_IMAGE%:latest'
                         )
-
                         if (status != 0) {
-                            echo "⚠️ Push du tag 'latest' échoué (code=${status}) mais on continue le pipeline."
+                            echo "⚠️ Push du tag 'latest' échoué (code=${status}) mais on continue."
                         }
                     }
                 }
+            }
+        }
+
+        // 🔚 Déploiement K8s en dernier
+        stage('Deploy to Kubernetes') {
+            steps {
+                echo 'Déploiement sur le cluster K8s...'
+                bat '''
+                    kubectl apply -n devops -f K8s/mysql-k8s.yaml
+                    kubectl apply -n devops -f K8s/spring-config.yaml
+                    kubectl apply -n devops -f K8s/spring-deployment.yaml
+                '''
             }
         }
     }
 
     post {
         success {
-            echo 'Build réussi ! Jar archivé & image Docker poussée sur Docker Hub.'
+            echo '✅ Build réussi ! Jar archivé, image Docker poussée et déploiement K8s lancé.'
         }
         failure {
-            echo 'Build échoué.'
+            echo '❌ Build échoué.'
         }
     }
 }
